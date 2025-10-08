@@ -22,7 +22,14 @@
         "list": [
           "Microsoft.PowerShell",
           "Google.Chrome",
-          "7zip.7zip"
+          "7zip.7zip",
+          "Adobe.Acrobat.Reader.64-bit",
+          "Notepad++.Notepad++",
+          "IfranView.IfranView",
+          "RingCentral.RingCentral",
+          "Google.GoogleDrive",
+          "WireGuard.WireGuard",
+          "TeamViewer.TeamViewer"
         ]
       }
     },

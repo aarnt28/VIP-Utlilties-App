@@ -1,34 +1,32 @@
-# Project: VIP Utility App
+# Repository Guidelines
 
-## Overview
-This project provides command-line and/or GUI access to run various administrative scripts or setup tasks for windows environments to simplify deployments or common maintainance.Essentially; A portable toolkit for automating Windows workstation/server setup with PowerShell 5.1 or 7+, using declarative tasks (YAML/JSON) and idempotent modules.
+## Project Structure & Module Organization
+`bootstrap/Start-WinOps.ps1` is the entry point that loads layered configs from `config/` and tasks from `tasks/`. PowerShell modules live in `modules/WinOps.*`, each exporting narrowly scoped functions (files, registry, apps, logging). The GUI launcher sits in `python_gui/app/main.py`, while helper utilities reside in `scripts/` (for example `Collect-Logs.ps1`). Persist idempotency markers under `state/` when you add new modules, and keep documentation updates in `docs/`. Tests belong in `tests/Pester/` using the same folder names as the modules they cover.
 
-## Important Project Parameters
-Remember to assume ultimate execution will take place on Windows systems. in some cases Windows 10/11 Pro, and in other cases Windows Server 16/19/22/25. 
-when implementation would differ depending on the Windows version/Edition, ensure to include logic to identify host OS and execute the proper method for the OS.
+## Build, Test, and Development Commands
+Run the standard workstation build with:
+```powershell
+.\bootstrap\Start-WinOps.ps1 -Task standard_build -Profile site-plano,workstation
+```
+Launch the GUI from an elevated Windows terminal after installing dependencies:
+```powershell
+python -m venv .venv; .\.venv\Scripts\Activate.ps1; pip install -r requirements.txt
+python .\python_gui\app\main.py
+```
+Collect diagnostic output befo1re filing issues via `powershell.exe -File .\scripts\Collect-Logs.ps1`.
 
-Ease of use and Compatibility is key. User should be able to run on any common windows system and be able to get things done because the project considers the appropriate variables and modifies approach accordingly. 
+## Coding Style & Naming Conventions
+Use PowerShell Advanced Functions with `[CmdletBinding()]` and camelCase parameters. Indent PowerShell with two spaces to match existing modules, keep function names in `Verb-Noun` form (e.g., `Ensure-StandardFolders`), and export via `Export-ModuleMember`. YAML config keys should be lowercase with dashes (`install-apps`). Python follows PEP 8 with 4-space indentation; prefer `Path` over string concatenation when possible. Commit generated artifacts to `state/` or `logs/` only if explicitly required; otherwise add them to `.gitignore`.
 
-## Agent Behavior
-Verifying assumptions and test when possible. Make surgical changes that are necessary to implement what the user asked for, stay on task.
+## Testing Guidelines
+Author unit tests with Pester v5 placed under `tests/Pester/<ModuleName>.Tests.ps1`. Name tests using `Describe "WinOps.Files"` and `It "Creates missing folders"` patterns. Run suites from PowerShell 7 when available:
+```powershell
+pwsh -NoProfile -Command "Invoke-Pester -Path tests/Pester -Output Detailed"
+```
+Add integration checks that validate idempotency by running the same task twice and asserting no changes on the second run.
 
-Update README.md when changes are made that are notable regarding the use of the application. Be thorough and assume the target end user is a beginner and needs much instruction. 
+## Commit & Pull Request Guidelines
+Write imperative, 60-character-or-less subject lines (`Add winget retry backoff`). Group related changes per commit (module + tests + docs). Pull requests should describe the scenario, affected modules, manual test steps, and include Windows edition coverage notes (e.g., “Validated on Server 2019 Core”). Link to issue IDs when applicable and attach sanitized transcript snippets from `logs/transcript` for troubleshooting.
 
-## How it flows (in practice)
-	1.	Bootstrap: Start-WinOps.ps1 -Task standard_build -Profile site-plano,workstation
-	•	Ensures elevation, sets $ExecutionContext.SessionState.LanguageMode, starts transcript, loads config stack: defaults.yaml → mios_core.yaml → site-plano.yaml → workstation.yaml.
-	2.	Task runner reads tasks/standard_build.yaml and executes steps via exported functions in modules/*.
-	3.	Idempotency: each step writes a small marker to state/applied/ and compares current system state; steps become safe to re-run.
-	4.	Logging: human-readable transcript + machine-readable JSONL events, plus an HTML report in logs/reports/.
-  
-## What’s inside (high-level)
-	•	Bootstrap: elevation → prefer pwsh 7 (auto-install via winget if possible) → fall back to 5.1 → start transcript + JSONL events.
-	•	Core engine: config/task loader with YAML (7+) or JSON fallback (5.1), simple idempotency stamps, and a tiny task runner.
-	•	Modules:
-	•	WinOps.Files/Layout::Ensure-StandardFolders
-	•	WinOps.System/Registry::Set-RegistryValues (with optional .reg backups)
-	•	WinOps.Apps/Winget::Install-Apps (defaults to winget)
-	•	Declarative samples: tasks/standard_build.(yaml|json) and config/*.(yaml|json)
-	•	Logging: transcripts, logs/events.jsonl, simple HTML run report
-	•	Python GUI: minimal customtkinter front-end that calls the PS bootstrap and streams output
-	•	Scaffold: tests, scripts, templates, state directories
+## Security & Configuration Tips
+Every script must confirm elevation before mutating system state (`Test-ProcessAdminRights`). Guard OS-specific logic with `$PSVersionTable.OS` or `Get-CimInstance Win32_OperatingSystem` checks to branch between Windows 10/11 and Server SKUs. Never hardcode credentials; use Windows Credential Manager or secure parameters. When adding new modules, document required firewall or policy exceptions in `docs/` and expose safe defaults through configuration files rather than inline values.

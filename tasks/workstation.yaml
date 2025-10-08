@@ -1,0 +1,20 @@
+name: "Workstation Baseline"
+profiles: ["workstation"]
+steps:
+  - use: "WinOps.Files/Layout::Ensure-StandardFolders"
+    with:
+      paths:
+        - "C:\\VIP\\Logs"
+        - "C:\\VIP\\Tools"
+
+  - use: "WinOps.Apps/Winget::Install-Apps"
+    with:
+      ids: [
+      "Microsoft.PowerShell",
+      "7zip.7zip",
+      "Google.Chrome"
+      ]
+
+  - use: "WinOps.Network::Disable-IPv6"
+    with:
+      scope: "All"

@@ -1,22 +1,10 @@
 import subprocess, sys, os, tkinter as tk
+from core.runner import run_task
 import customtkinter as ctk
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-ROOT = os.path.abspath(os.path.join(HERE, "..", ".."))
-
-def run_task():
-    ps = os.path.join(ROOT, "bootstrap", "Start-WinOps.ps1")
-    cmd = ["powershell.exe", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", ps, "-Task", "standard_build", "-Profile", "site-plano,workstation"]
-    txt.insert("end", f"$ {' '.join(cmd)}\n")
-    try:
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
-        for line in proc.stdout:
-            txt.insert("end", line)
-            txt.see("end")
-        rc = proc.wait()
-        txt.insert("end", f"\nExited with code {rc}\n")
-    except Exception as e:
-        txt.insert("end", f"ERROR: {e}\n")
+def append_to_textbox(s: str):
+    txt.insert("end", s + "\n")
+    txt.see("end")
 
 app = ctk.CTk()
 app.title("WinOpsToolkit GUI")
@@ -30,5 +18,12 @@ btn.pack(side="left", padx=6)
 
 txt = tk.Text(app, wrap="word")
 txt.pack(fill="both", expand=True, padx=10, pady=(0,10))
+
+def on_run_clicked():
+    code = run_task("workstation", ["site-plano", "workstation"], on_line=append_to_textbox)
+    if code is None:
+        append_to_textbox("Elevated run started (output will appear in logs).")
+    else:
+        append_to_textbox(f"Task finished with exit code {code}")
 
 app.mainloop()

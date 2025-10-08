@@ -25,3 +25,7 @@ steps:
           type: DWord
           data: 1
       backup: true
+
+  - script: "scripts/Collect-Inventory.ps1"
+    with:
+      out: "C:\\VIP\\Logs\\inventory.json"
