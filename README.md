@@ -24,3 +24,7 @@ See `modules/` for exported functions and `tasks/` + `config/` for declarative r
 
 - The sample task uses `WinOps.Files/Layout::Ensure-StandardFolders`, `WinOps.System/Registry::Set-RegistryValues`, and `WinOps.Apps/Winget::Install-Apps`.
 - Replace sample app IDs and registry keys with your real standards.
+
+## Project Roadmap
+
+See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the detailed delivery plan covering discovery, CLI hardening, shared abstractions, GUI work, and testing/packaging milestones.
