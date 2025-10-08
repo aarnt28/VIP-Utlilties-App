@@ -1,0 +1,50 @@
+{
+  "name": "Standard Workstation Build",
+  "steps": [
+    {
+      "uses": "WinOps.Files/Layout::Ensure-StandardFolders",
+      "with": {
+        "map": {
+          "C:\\Clients": {
+            "offlineCache": false,
+            "acl": "Users:Modify"
+          },
+          "C:\\Tools": {
+            "offlineCache": false,
+            "acl": "Administrators:FullControl"
+          }
+        }
+      }
+    },
+    {
+      "uses": "WinOps.Apps/Winget::Install-Apps",
+      "with": {
+        "list": [
+          "Microsoft.PowerShell",
+          "Google.Chrome",
+          "7zip.7zip"
+        ]
+      }
+    },
+    {
+      "uses": "WinOps.System/Registry::Set-RegistryValues",
+      "with": {
+        "values": [
+          {
+            "path": "HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Advanced",
+            "name": "HideFileExt",
+            "type": "DWord",
+            "data": 0
+          },
+          {
+            "path": "HKLM:\\SOFTWARE\\Policies\\Microsoft\\Windows\\Explorer",
+            "name": "HideSCAVolume",
+            "type": "DWord",
+            "data": 1
+          }
+        ],
+        "backup": true
+      }
+    }
+  ]
+}

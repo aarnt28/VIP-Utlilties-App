@@ -1,0 +1,10 @@
+vars:
+  SiteCode: "PLN"
+apps:
+  include:
+    - "Google.Chrome"
+    - "Adobe.Acrobat.Reader.64-bit"
+filesystem:
+  basePaths:
+    ToolsDir: "C:\\Tools"
+    ClientRoot: "C:\\Clients\\PLN"
